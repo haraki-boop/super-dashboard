@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistics Super Dashboard</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --text: #00ff41; /* マトリックス・グリーン */
+            --accent: #ff3e3e;
+            --card-bg: #1a1a1a;
+        }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid var(--text);
+            padding-bottom: 10px;
+            text-shadow: 0 0 10px var(--text);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--text);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+        }
+        .card h3 { margin-top: 0; font-size: 0.9rem; opacity: 0.8; }
+        .stat { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
+        
+        .url-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px dashed var(--text);
+        }
+        input {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--text);
+            color: var(--text);
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--text);
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+        button:hover { opacity: 0.8; }
+        
+        .ai-report {
+            margin-top: 30px;
+            padding: 20px;
+            background: #001a00;
+            border: 1px solid var(--text);
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        .loading { animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>LOGISTICS SUPER DASHBOARD</h1>
+
+    <div class="url-section">
+        <label>CSV公開URLを入力してください:</label>
+        <input type="text" id="csvUrl" placeholder="https://docs.google.com/spreadsheets/.../pub?output=csv">
+        <button onclick="runAnalysis()">データ解析・AI診断開始</button>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h3>TOTAL ORDERS</h3>
+            <div id="totalOrders" class="stat">--</div>
+        </div>
+        <div class="card">
+            <h3>PROGRESS RATE</h3>
+            <div id="progressRate" class="stat">--%</div>
+        </div>
+        <div class="card" style="border-color: var(--accent);">
+            <h3>ALERT / DELAY</h3>
+            <div id="alertCount" class="stat" style="color: var(--accent);">--</div>
+        </div>
+    </div>
+
+    <div id="report" class="ai-report">
+        AI解析レポートがここに表示されます。スプレッドシートのデータを元に、改善策を提案します。
+    </div>
+</div>
+
+<script>
+    async function runAnalysis() {
+        const csvUrl = document.getElementById('csvUrl').value;
+        const reportDiv = document.getElementById('report');
+        
+        if (!csvUrl) {
+            alert("CSVのURLを入力してください");
+            return;
+        }
+
+        reportDiv.className = "ai-report loading";
+        reportDiv.innerText = "データを取得中...";
+
+        try {
+            // 1. スプレッドシートデータの取得
+            const response = await fetch(csvUrl);
+            const csvData = await response.text();
+            
+            // 2. 簡易的な数値抽出 (スプレッドシートの形式に合わせて調整が必要)
+            // ここではデモとしてCSVの行数をオーダー数としてカウント
+            const rows = csvData.split('\n');
+            document.getElementById('totalOrders').innerText = rows.length - 1;
+            document.getElementById('progressRate').innerText = "84%"; // 仮数値
+            document.getElementById('alertCount').innerText = "3件"; // 仮数値
+
+            reportDiv.innerText = "AIによる戦略分析を実行中...";
+
+            // 3. AIにデータを投げて分析させる
+            const aiRes = await fetch("/api/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: "gpt-4o",
+                    messages: [
+                        { 
+                            role: "system", 
+                            content: "あなたは凄腕の物流センター長です。提供された生データ(CSV)から、現場のボトルネックを特定し、具体的な改善策（人員配置の変更、優先順位の指示など）をロジカルかつ簡潔に報告してください。" 
+                        },
+                        { 
+                            role: "user", 
+                            content: `以下の最新の物流データ（CSV形式）を解析してください。\n\n${csvData}` 
+                        }
+                    ]
+                })
+            });
+
+            const data = await aiRes.json();
+            reportDiv.className = "ai-report";
+            reportDiv.innerText = data.choices[0].message.content;
+
+        } catch (error) {
+            reportDiv.className = "ai-report";
+            reportDiv.innerText = "エラー：データの取得または解析に失敗しました。URLが正しいか、API設定が正しいか確認してください。";
+        }
+    }
+</script>
+
+</body>
+</html>
