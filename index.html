@@ -3,179 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Logistics Dashboard</title>
+    <title>Logistics Intelligence Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-color: #0a0a0a;
-            --text-color: #00ff41; /* マトリックス・グリーン */
-            --accent-color: #ff0000;
-            --box-bg: #1a1a1a;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --primary: #3b82f6;
+            --accent: #ef4444;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
         }
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Courier New', Courier, monospace;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
             margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-        h1 {
-            font-size: 1.5rem;
-            text-align: center;
-            border-bottom: 2px solid var(--text-color);
-            padding-bottom: 10px;
-            text-shadow: 0 0 10px var(--text-color);
-        }
-        .status-bar {
-            background: #222;
-            padding: 5px 15px;
-            font-size: 0.8rem;
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .url-input-area {
-            background: var(--box-bg);
-            padding: 20px;
-            border: 1px solid var(--text-color);
-            margin-bottom: 20px;
-        }
-        input {
-            width: 100%;
-            background: #000;
-            border: 1px solid var(--text-color);
-            color: var(--text-color);
-            padding: 12px;
-            margin-bottom: 15px;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-        button {
-            width: 100%;
-            padding: 15px;
-            background: var(--text-color);
-            color: #000;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            letter-spacing: 2px;
-        }
-        button:hover { background: #00cc33; }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        .card {
-            background: var(--box-bg);
-            border: 1px solid var(--text-color);
-            padding: 15px;
-            text-align: center;
-        }
-        .card-label { font-size: 0.7rem; opacity: 0.7; margin-bottom: 5px; }
-        .card-value { font-size: 1.8rem; font-weight: bold; }
-
-        .report-area {
-            flex-grow: 1;
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px solid var(--text-color);
-            background: rgba(0, 255, 65, 0.05);
-            overflow-y: auto;
-            white-space: pre-wrap;
+            padding: 24px;
             line-height: 1.6;
         }
-        .loading { animation: pulse 1.5s infinite; color: var(--accent-color); }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* ヘッダー */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; margin: 0; }
+        .badge { background: #064e3b; color: #34d399; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+
+        /* 入力エリア */
+        .search-box {
+            background: var(--surface);
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        input {
+            flex-grow: 1;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            outline: none;
+        }
+        input:focus { border-color: var(--primary); }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* グラフエリア */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-bottom: 32px; }
+        .card { background: var(--surface); padding: 24px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+        .card h2 { font-size: 0.875rem; color: var(--text-sub); margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.05em; }
+        .chart-h { height: 300px; position: relative; }
+
+        /* AIレポートエリア */
+        .report-section { background: var(--surface); border-radius: 16px; overflow: hidden; }
+        .report-header { background: #334155; padding: 12px 24px; font-weight: 600; font-size: 0.875rem; display: flex; align-items: center; gap: 8px; }
+        .report-body { padding: 24px; min-height: 200px; border-left: 4px solid var(--primary); }
+        .ai-content { font-size: 1rem; color: #e2e8f0; white-space: pre-wrap; }
+        
+        .loading-spin { color: var(--text-sub); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
-<h1>LOGISTICS AI SUPER DASHBOARD</h1>
+<div class="container">
+    <header>
+        <h1>LOGISTICS INTEL</h1>
+        <div class="badge">SYSTEM: ONLINE</div>
+    </header>
 
-<div class="status-bar">
-    <span>SYSTEM: ACTIVE</span>
-    <span id="timestamp"></span>
-</div>
-
-<div class="url-input-area">
-    <label style="font-size: 0.8rem; display: block; margin-bottom: 10px;">ENTER SPREADSHEET CSV URL:</label>
-    <input type="text" id="csvUrl" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
-    <button onclick="analyzeLogistics()">EXECUTE AI ANALYSIS</button>
-</div>
-
-<div class="dashboard-grid">
-    <div class="card">
-        <div class="card-label">DATA ROWS</div>
-        <div id="rowCount" class="card-value">--</div>
+    <div class="search-box">
+        <input type="text" id="csvUrl" placeholder="スプレッドシートのCSV URLを入力してください">
+        <button onclick="updateDashboard()">分析実行</button>
     </div>
-    <div class="card">
-        <div class="card-label">ANALYSIS STATUS</div>
-        <div id="statusVal" class="card-value" style="font-size: 1rem;">WAITING</div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>出荷・在庫トレンド</h2>
+            <div class="chart-h"><canvas id="lineChart"></canvas></div>
+        </div>
+        <div class="card">
+            <h2>拠点別パフォーマンス</h2>
+            <div class="chart-h"><canvas id="barChart"></canvas></div>
+        </div>
+    </div>
+
+    <div class="report-section">
+        <div class="report-header">🧠 AI センター長 診断レポート</div>
+        <div class="report-body">
+            <div id="aiOutput" class="ai-content">ここに分析結果が表示されます。URLを入力して「分析実行」を押してください。</div>
+        </div>
     </div>
 </div>
-
-<div id="report" class="report-area">AI REPORT WILL APPEAR HERE...</div>
 
 <script>
-    document.getElementById('timestamp').innerText = new Date().toLocaleString();
+    let charts = {};
 
-    async function analyzeLogistics() {
-        const csvUrl = document.getElementById('csvUrl').value;
-        const report = document.getElementById('report');
-        const rowCount = document.getElementById('rowCount');
-        const statusVal = document.getElementById('statusVal');
+    async function updateDashboard() {
+        const url = document.getElementById('csvUrl').value;
+        const aiOutput = document.getElementById('aiOutput');
+        if (!url) return;
 
-        if (!csvUrl) { alert("Please enter a valid CSV URL"); return; }
-
-        report.innerText = ">>> FETCHING DATA FROM CLOUD...";
-        report.className = "report-area loading";
-        statusVal.innerText = "FETCHING";
+        aiOutput.innerHTML = '<div class="loading-spin">>>> データをスキャンし、異常値を検出中...</div>';
 
         try {
-            // 1. CSVデータの取得
-            const res = await fetch(csvUrl);
-            if (!res.ok) throw new Error("NETWORK ERROR: COULD NOT REACH CSV");
+            const res = await fetch(url);
             const csvData = await res.text();
+            const rows = csvData.trim().split('\n').map(r => r.split(','));
             
-            const rows = csvData.trim().split('\n');
-            rowCount.innerText = rows.length - 1;
-            
-            report.innerText = ">>> DATA RECEIVED. AI ANALYSIS IN PROGRESS...";
-            statusVal.innerText = "ANALYZING";
+            // データの抽出 (1列目ラベル, 2列目数値)
+            const labels = rows.slice(1).map(r => r[0]);
+            const dataValues = rows.slice(1).map(r => parseFloat(r[1]) || 0);
 
-            // 2. AI分析リクエスト
+            // グラフ描画
+            initChart('lineChart', 'line', labels, dataValues, '#3b82f6');
+            initChart('barChart', 'bar', labels, dataValues, '#8b5cf6');
+
+            // AI分析
             const aiRes = await fetch("/api/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     model: "gpt-4o",
                     messages: [
-                        { 
-                            role: "system", 
-                            content: "あなたは凄腕の物流センター長です。CSVデータを読み取り、現場の進捗、ボトルネック、人員配置、遅延リスクを鋭く分析してください。報告は箇条書きを使い、センター長らしい決断力のある口調で行ってください。" 
-                        },
-                        { role: "user", content: `以下の実績データを分析せよ：\n\n${csvData}` }
+                        { role: "system", content: "あなたはデータサイエンティストの視点を持つ物流センター長です。異常値を即座に見抜き、論理的かつ現場が動きやすい日本語で改善策を提案してください。重要事項は太字を使ってください。" },
+                        { role: "user", content: `データ分析せよ:\n${csvData}` }
                     ]
                 })
             });
-
             const data = await aiRes.json();
-            
-            if (data.error) throw new Error(data.error.message);
+            aiOutput.innerHTML = data.choices[0].message.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-            report.className = "report-area";
-            report.innerText = data.choices[0].message.content;
-            statusVal.innerText = "COMPLETE";
-
-        } catch (err) {
-            report.className = "report-area";
-            report.innerText = "!!! CRITICAL ERROR !!!\n" + err.message;
-            statusVal.innerText = "ERROR";
+        } catch (e) {
+            aiOutput.innerText = "エラーが発生しました: " + e.message;
         }
+    }
+
+    function initChart(id, type, labels, data, color) {
+        if (charts[id]) charts[id].destroy();
+        const ctx = document.getElementById(id).getContext('2d');
+        charts[id] = new Chart(ctx, {
+            type: type,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '実績',
+                    data: data,
+                    borderColor: color,
+                    backgroundColor: color + '22',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
     }
 </script>
 </body>
