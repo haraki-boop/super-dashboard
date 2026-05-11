@@ -2,183 +2,136 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logistics Intelligence Dashboard</title>
+    <title>Executive Logistics Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg: #0f172a;
-            --surface: #1e293b;
-            --primary: #3b82f6;
-            --accent: #ef4444;
-            --success: #10b981;
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            margin: 0;
-            padding: 24px;
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; border-bottom: 1px solid #334155; padding-bottom: 20px; }
-        .badge { background: #1e3a8a; color: #60a5fa; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; }
-
-        .input-card {
-            background: var(--surface);
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 32px;
-            display: flex;
-            gap: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
-        }
-        input {
-            flex-grow: 1;
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 8px;
-            outline: none;
-        }
-        button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-bottom: 32px; }
-        .card { background: var(--surface); padding: 24px; border-radius: 16px; }
-        .card h2 { font-size: 0.875rem; color: var(--text-sub); margin: 0 0 20px 0; text-transform: uppercase; letter-spacing: 0.1em; }
-        .chart-container { height: 320px; position: relative; }
-
-        .report-section { background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid #334155; }
-        .report-header { background: #334155; padding: 16px 24px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        .report-body { padding: 24px; min-height: 200px; line-height: 1.8; color: #e2e8f0; }
-        
-        .loading { animation: pulse 2s infinite; color: var(--text-sub); }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        strong { color: #fbbf24; }
+        :root { --bg: #f8fafc; --card: #ffffff; --primary: #2563eb; --text: #1e293b; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .full-width { grid-column: span 2; }
+        .ai-report { background: #1e293b; color: #f1f5f9; padding: 25px; border-radius: 12px; margin-top: 20px; line-height: 1.8; }
+        input { padding: 10px; width: 400px; border: 1px solid #ddd; border-radius: 6px; }
+        button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <div>
-            <h1 style="margin:0; font-size: 1.5rem;">LOGISTICS COMMAND CENTER</h1>
-            <p style="margin:5px 0 0; font-size: 0.8rem; color: var(--text-sub);">AI-Powered Advanced Data Analysis</p>
-        </div>
-        <div class="badge">ANALYSIS MODE: ACTIVE</div>
-    </header>
+<div class="header">
+    <h1>経営・労務 統合ダッシュボード <span style="font-size: 0.9rem; font-weight: normal;">(25年-26年)</span></h1>
+    <div>
+        <input type="text" id="csvUrl" placeholder="CSV URLを入力">
+        <button onclick="updateAll()">全データ更新</button>
+    </div>
+</div>
 
-    <div class="input-card">
-        <input type="text" id="csvUrl" placeholder="スプレッドシートのCSV URLを貼り付けてください">
-        <button onclick="executeAnalysis()">分析を開始</button>
+<div class="grid">
+    <div class="card full-width">
+        <h3>💰 収支推移（売上・総利益）</h3>
+        <div style="height: 300px;"><canvas id="profitChart"></canvas></div>
     </div>
 
-    <div class="grid">
-        <div class="card">
-            <h2>📦 入荷・出荷ボリューム推移</h2>
-            <div class="chart-container"><canvas id="mainChart"></canvas></div>
-        </div>
-        <div class="card">
-            <h2>📈 進捗率トレンド</h2>
-            <div class="chart-container"><canvas id="progressChart"></canvas></div>
-        </div>
+    <div class="card">
+        <h3>👷 労務コスト詳細（残業代・タイミー費用）</h3>
+        <div style="height: 250px;"><canvas id="laborChart"></canvas></div>
     </div>
 
-    <div class="report-section">
-        <div class="report-header">🧠 AI センター長 診断レポート</div>
-        <div class="report-body" id="aiReport">
-            URLを入力し「分析を開始」ボタンを押してください。システムが自動的に特定の列からデータを抽出し、診断を開始します。
-        </div>
+    <div class="card">
+        <h3>📈 生産性指標（人時売上・労務比率）</h3>
+        <div style="height: 250px;"><canvas id="prodChart"></canvas></div>
     </div>
+</div>
+
+<div class="ai-report" id="aiReport">
+    ここにAIセンター長の詳細な経営診断が表示されます。
 </div>
 
 <script>
     let charts = {};
 
-    async function executeAnalysis() {
+    async function updateAll() {
         const url = document.getElementById('csvUrl').value;
         const reportArea = document.getElementById('aiReport');
-        if (!url) return alert("URLを入力してください");
+        if(!url) return;
 
-        reportArea.innerHTML = '<div class="loading">>>> 指定された列(1, 10, 18, 23)からデータを抽出中...</div>';
+        reportArea.innerText = "全26項目をクロス集計中...";
 
         try {
             const res = await fetch(url);
             const csvText = await res.text();
             const rows = csvText.trim().split('\n').map(r => r.split(','));
 
-            // センター長指定の列番号からデータを抽出
-            // 1: 日付, 10: 合計(入荷), 18: 合計(出荷), 23: 進捗率
-            const labels = rows.slice(1).map(r => r[1] || "不明");
-            const inData = rows.slice(1).map(r => parseFloat(r[10]) || 0);
-            const outData = rows.slice(1).map(r => parseFloat(r[18]) || 0);
-            const progressData = rows.slice(1).map(r => parseFloat(r[23]) || 0);
+            // 画像の並びからデータを自動抽出
+            const labels = rows.slice(1).map(r => r[0]); // 月
+            const sales = rows.slice(1).map(r => parseFloat(r[1]) || 0); // 売上
+            const gross = rows.slice(1).map(r => parseFloat(r[4]) || 0); // 総利益
+            const overtime = rows.slice(1).map(r => parseFloat(r[3]) || 0); // 残業代
+            const tymee = rows.slice(1).map(r => parseFloat(r[13]) || 0); // タイミー費用
+            const prod = rows.slice(1).map(r => parseFloat(r[18]) || 0); // 生産性
 
-            // グラフ描画
-            renderMainChart(labels, inData, outData);
-            renderProgressChart(labels, progressData);
+            // 各グラフをレンダリング
+            renderProfitChart(labels, sales, gross);
+            renderLaborChart(labels, overtime, tymee);
+            renderProdChart(labels, prod);
 
-            // AI分析
-            reportArea.innerHTML = '<div class="loading">>>> AIが異常値をスキャンしています...</div>';
+            // AIに全項目を渡して、経営的な改善点を答えさせる
             const aiRes = await fetch("/api/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     model: "gpt-4o",
                     messages: [
-                        { role: "system", content: "あなたはデータに基づき現場の異常を見抜く物流センター長です。入荷(10列目)、出荷(18列目)、進捗(23列目)の数値を厳しくチェックし、異常があれば指摘、なければ今後の予測と現場への指示をプロフェッショナルに伝えてください。" },
-                        { role: "user", content: `分析用データ(CSV):\n${csvText}` }
+                        { role: "system", content: "あなたは経営コンサルタント資格を持つ物流センター長です。売上、利益だけでなく、残業代やタイミー費用、人時売上の推移から、経営上の『火種』を見つけて改善策を提案してください。" },
+                        { role: "user", content: `25年〜26年の経営データです。分析せよ：\n${csvText}` }
                     ]
                 })
             });
             const data = await aiRes.json();
-            reportArea.innerHTML = data.choices[0].message.content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            reportArea.innerHTML = "<h2>📝 センター長 経営判断</h2>" + data.choices[0].message.content.replace(/\n/g, '<br>');
 
         } catch (e) {
-            reportArea.innerText = "エラーが発生しました。VercelのAPIキー設定、またはURLを確認してください: " + e.message;
+            reportArea.innerText = "エラー: " + e.message;
         }
     }
 
-    function renderMainChart(labels, inData, outData) {
-        if (charts.main) charts.main.destroy();
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        charts.main = new Chart(ctx, {
+    function renderProfitChart(labels, sales, gross) {
+        if(charts.p) charts.p.destroy();
+        charts.p = new Chart(document.getElementById('profitChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: '売上', data: sales, borderColor: '#2563eb', fill: false },
+                    { label: '売上総利益', data: gross, borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)' }
+                ]
+            }
+        });
+    }
+
+    function renderLaborChart(labels, ot, tymee) {
+        if(charts.l) charts.l.destroy();
+        charts.l = new Chart(document.getElementById('laborChart'), {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: '入荷合計', data: inData, backgroundColor: '#3b82f6' },
-                    { label: '出荷合計', data: outData, backgroundColor: '#10b981' }
+                    { label: '残業代', data: ot, backgroundColor: '#ef4444' },
+                    { label: 'タイミー費用', data: tymee, backgroundColor: '#f59e0b' }
                 ]
             },
-            options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } } }
+            options: { scales: { y: { stacked: true } } }
         });
     }
 
-    function renderProgressChart(labels, data) {
-        if (charts.prog) charts.prog.destroy();
-        const ctx = document.getElementById('progressChart').getContext('2d');
-        charts.prog = new Chart(ctx, {
+    function renderProdChart(labels, prod) {
+        if(charts.pr) charts.pr.destroy();
+        charts.pr = new Chart(document.getElementById('prodChart'), {
             type: 'line',
             data: {
                 labels: labels,
-                datasets: [{ label: '進捗率(%)', data: data, borderColor: '#fbbf24', tension: 0.4, fill: false }]
-            },
-            options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } } }
+                datasets: [{ label: '人時売上', data: prod, borderColor: '#8b5cf6', tension: 0.4 }]
+            }
         });
     }
 </script>
