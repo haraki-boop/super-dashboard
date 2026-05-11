@@ -3,171 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logistics Intel - Pro Edition</title>
+    <title>Logistics Intelligence Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg: #0b0f19;
-            --card: #161b2a;
+            --bg: #0f172a;
+            --surface: #1e293b;
             --primary: #3b82f6;
-            --accent: #f43f5e;
-            --text: #f8fafc;
-            --sub-text: #94a3b8;
+            --accent: #ef4444;
+            --success: #10b981;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
         }
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg);
-            color: var(--text);
+            color: var(--text-main);
             margin: 0;
             padding: 24px;
         }
         .container { max-width: 1200px; margin: 0 auto; }
         
-        /* ヘッダー */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .logo { font-size: 1.5rem; font-weight: 800; letter-spacing: -1px; color: var(--primary); }
-        .status { font-size: 0.8rem; background: #064e3b; color: #34d399; padding: 4px 12px; border-radius: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; border-bottom: 1px solid #334155; padding-bottom: 20px; }
+        .badge { background: #1e3a8a; color: #60a5fa; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; }
 
-        /* 入力エリア */
         .input-card {
-            background: var(--card);
+            background: var(--surface);
             padding: 20px;
             border-radius: 16px;
+            margin-bottom: 32px;
             display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            border: 1px solid #2d3748;
+            gap: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
         }
         input {
             flex-grow: 1;
-            background: #0b0f19;
-            border: 1px solid #2d3748;
+            background: #0f172a;
+            border: 1px solid #334155;
             color: white;
-            padding: 12px;
-            border-radius: 10px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            outline: none;
         }
         button {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 10px;
-            font-weight: bold;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 700;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.2s;
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        /* グラフ */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 24px; margin-bottom: 30px; }
-        .card { background: var(--card); padding: 24px; border-radius: 16px; border: 1px solid #2d3748; }
-        .card h3 { font-size: 0.9rem; color: var(--sub-text); margin-bottom: 20px; }
-        .chart-box { height: 350px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-bottom: 32px; }
+        .card { background: var(--surface); padding: 24px; border-radius: 16px; }
+        .card h2 { font-size: 0.875rem; color: var(--text-sub); margin: 0 0 20px 0; text-transform: uppercase; letter-spacing: 0.1em; }
+        .chart-container { height: 320px; position: relative; }
 
-        /* AI診断レポート */
-        .report-card { background: var(--card); border-radius: 16px; border-left: 6px solid var(--primary); overflow: hidden; }
-        .report-header { background: #1e293b; padding: 15px 24px; font-weight: bold; }
-        .report-body { padding: 24px; line-height: 1.8; font-size: 1.05rem; white-space: pre-wrap; }
-        strong { color: #60a5fa; }
+        .report-section { background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid #334155; }
+        .report-header { background: #334155; padding: 16px 24px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .report-body { padding: 24px; min-height: 200px; line-height: 1.8; color: #e2e8f0; }
+        
+        .loading { animation: pulse 2s infinite; color: var(--text-sub); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        strong { color: #fbbf24; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <div class="logo">LOGISTICS INTEL</div>
-        <div class="status">AI ANALYSIS ACTIVE</div>
+        <div>
+            <h1 style="margin:0; font-size: 1.5rem;">LOGISTICS COMMAND CENTER</h1>
+            <p style="margin:5px 0 0; font-size: 0.8rem; color: var(--text-sub);">AI-Powered Advanced Data Analysis</p>
+        </div>
+        <div class="badge">ANALYSIS MODE: ACTIVE</div>
     </header>
 
     <div class="input-card">
-        <input type="text" id="csvUrl" placeholder="CSV URLを入力してください (pub?output=csv)">
-        <button onclick="runProAnalysis()">分析実行</button>
+        <input type="text" id="csvUrl" placeholder="スプレッドシートのCSV URLを貼り付けてください">
+        <button onclick="executeAnalysis()">分析を開始</button>
     </div>
 
     <div class="grid">
         <div class="card">
-            <h3>📦 入出荷バランス推移</h3>
-            <div class="chart-box"><canvas id="lineChart"></canvas></div>
+            <h2>📦 入荷・出荷ボリューム推移</h2>
+            <div class="chart-container"><canvas id="mainChart"></canvas></div>
         </div>
         <div class="card">
-            <h3>👥 拠点別・生産性分析</h3>
-            <div class="chart-box"><canvas id="barChart"></canvas></div>
+            <h2>📈 進捗率トレンド</h2>
+            <div class="chart-container"><canvas id="progressChart"></canvas></div>
         </div>
     </div>
 
-    <div class="report-card">
-        <div class="report-header">🧠 AI センター長：現場診断・異常検知レポート</div>
-        <div id="aiOutput" class="report-body">スプレッドシートのURLを入力して「分析実行」を押すと、ここにAIの指示が表示されます。</div>
+    <div class="report-section">
+        <div class="report-header">🧠 AI センター長 診断レポート</div>
+        <div class="report-body" id="aiReport">
+            URLを入力し「分析を開始」ボタンを押してください。システムが自動的に特定の列からデータを抽出し、診断を開始します。
+        </div>
     </div>
 </div>
 
 <script>
     let charts = {};
 
-    async function runProAnalysis() {
+    async function executeAnalysis() {
         const url = document.getElementById('csvUrl').value;
-        const output = document.getElementById('aiOutput');
+        const reportArea = document.getElementById('aiReport');
         if (!url) return alert("URLを入力してください");
 
-        output.innerHTML = ">>> データをJSONに変換中... AIが異常をスキャンしています...";
+        reportArea.innerHTML = '<div class="loading">>>> 指定された列(1, 10, 18, 23)からデータを抽出中...</div>';
 
         try {
             const res = await fetch(url);
-            const csv = await res.text();
-            
-            // --- ここでデータを加工（CSV → JSON） ---
-            const rows = csv.trim().split('\n').map(r => r.split(','));
-            const headers = rows[0];
-            const jsonData = rows.slice(1).map(row => {
-                let obj = {};
-                headers.forEach((h, i) => obj[h.trim()] = row[i]?.trim());
-                return obj;
-            });
+            const csvText = await res.text();
+            const rows = csvText.trim().split('\n').map(r => r.split(','));
 
-            // グラフデータの準備
-            const labels = jsonData.map(d => d["日付"] || d[headers[0]]);
-            const inValues = jsonData.map(d => parseFloat(d["入荷"]) || 0);
-            const outValues = jsonData.map(d => parseFloat(d["出荷"]) || 0);
-            const prodValues = jsonData.map(d => parseFloat(d["生産性"]) || 0);
+            // センター長指定の列番号からデータを抽出
+            // 1: 日付, 10: 合計(入荷), 18: 合計(出荷), 23: 進捗率
+            const labels = rows.slice(1).map(r => r[1] || "不明");
+            const inData = rows.slice(1).map(r => parseFloat(r[10]) || 0);
+            const outData = rows.slice(1).map(r => parseFloat(r[18]) || 0);
+            const progressData = rows.slice(1).map(r => parseFloat(r[23]) || 0);
 
             // グラフ描画
-            updateChart('lineChart', 'line', labels, [{label:'入荷', data:inValues, borderColor:'#3b82f6'}, {label:'出荷', data:outValues, borderColor:'#f43f5e'}]);
-            updateChart('barChart', 'bar', labels, [{label:'生産性(件/h)', data:prodValues, backgroundColor:'#8b5cf6'}]);
+            renderMainChart(labels, inData, outData);
+            renderProgressChart(labels, progressData);
 
-            // AI分析リクエスト
+            // AI分析
+            reportArea.innerHTML = '<div class="loading">>>> AIが異常値をスキャンしています...</div>';
             const aiRes = await fetch("/api/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     model: "gpt-4o",
                     messages: [
-                        { role: "system", content: "あなたはデータ分析に強い物流センター長です。JSONデータから、入荷超過、出荷遅延、生産性低下などの異常を即座に見抜き、具体的な指示を出してください。" },
-                        { role: "user", content: `以下のデータをJSON形式で解析し、異常の有無と改善策を報告せよ：\n${JSON.stringify(jsonData)}` }
+                        { role: "system", content: "あなたはデータに基づき現場の異常を見抜く物流センター長です。入荷(10列目)、出荷(18列目)、進捗(23列目)の数値を厳しくチェックし、異常があれば指摘、なければ今後の予測と現場への指示をプロフェッショナルに伝えてください。" },
+                        { role: "user", content: `分析用データ(CSV):\n${csvText}` }
                     ]
                 })
             });
             const data = await aiRes.json();
-            output.innerHTML = data.choices[0].message.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            reportArea.innerHTML = data.choices[0].message.content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
         } catch (e) {
-            output.innerText = "❌ エラー: " + e.message;
+            reportArea.innerText = "エラーが発生しました。VercelのAPIキー設定、またはURLを確認してください: " + e.message;
         }
     }
 
-    function updateChart(id, type, labels, datasets) {
-        if (charts[id]) charts[id].destroy();
-        const ctx = document.getElementById(id).getContext('2d');
-        charts[id] = new Chart(ctx, {
-            type: type,
-            data: { labels: labels, datasets: datasets.map(ds => ({
-                ...ds,
-                borderWidth: 3,
-                tension: 0.3,
-                fill: type === 'line' ? false : true
-            }))},
-            options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } },
-                scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } }
-            }
+    function renderMainChart(labels, inData, outData) {
+        if (charts.main) charts.main.destroy();
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        charts.main = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: '入荷合計', data: inData, backgroundColor: '#3b82f6' },
+                    { label: '出荷合計', data: outData, backgroundColor: '#10b981' }
+                ]
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } } }
+        });
+    }
+
+    function renderProgressChart(labels, data) {
+        if (charts.prog) charts.prog.destroy();
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        charts.prog = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{ label: '進捗率(%)', data: data, borderColor: '#fbbf24', tension: 0.4, fill: false }]
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } } }
         });
     }
 </script>
